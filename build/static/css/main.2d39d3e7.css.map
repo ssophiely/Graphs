@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.2d39d3e7.css","mappings":"AAAA,MACE,wBAAoC,CACpC,UAAW,CACX,SACF,CACA,OACE,WAAY,CACZ,SACF","sources":["styles.css"],"sourcesContent":[".left {\r\n  background-color: rgb(157, 235, 255);\r\n  float: left;\r\n  width: 60%;\r\n}\r\n.right {\r\n  float: right;\r\n  width: 40%;\r\n}\r\n"],"names":[],"sourceRoot":""}
