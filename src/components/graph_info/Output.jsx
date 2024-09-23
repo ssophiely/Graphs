@@ -1,11 +1,29 @@
 import React, { useRef, useState } from "react";
+import { findMinPath } from "../../algorithms/dijkstra.js";
 
-export default function Output({ rowHeaders }) {
+export default function Output({ rowHeaders, data }) {
   const startSelectRef = useRef();
+  const endSelectRef = useRef();
+
   const [length, setLength] = useState(null);
+  const [path, setPath] = useState("");
+
   const filteredItems = rowHeaders.filter((item) => item.trim() !== "");
 
-  function handleClick() {}
+  function handleClick() {
+    const numData = data.map((v) =>
+      v.map((x) => (parseInt(x) ? parseInt(x) : 0))
+    );
+
+    let [len, path] = findMinPath(
+      numData,
+      rowHeaders.indexOf(startSelectRef.current.value),
+      rowHeaders.indexOf(endSelectRef.current.value)
+    );
+
+    setLength(len);
+    setPath(path.map((v) => rowHeaders[v]).join("🠒"));
+  }
 
   return (
     <div>
@@ -21,14 +39,12 @@ export default function Output({ rowHeaders }) {
       </div>
       <div className="dropdown">
         <label htmlFor="dropdown2">Конечная вершина:&emsp;</label>
-        <select id="dropdown2">
-          {filteredItems
-            .filter((val) => val !== startSelectRef.current.value)
-            .map((item, index) => (
-              <option key={index} value={item}>
-                {item}
-              </option>
-            ))}
+        <select id="dropdown2" ref={endSelectRef}>
+          {filteredItems.map((item, index) => (
+            <option key={index} value={item}>
+              {item}
+            </option>
+          ))}
         </select>
       </div>
       <br />
@@ -40,7 +56,7 @@ export default function Output({ rowHeaders }) {
         Длина пути:&emsp;<span>{length}</span>
       </p>
       <p id="result">
-        Список вершин:&emsp;<span>{length}</span>
+        Список вершин:&emsp;<span>{path}</span>
       </p>
     </div>
   );

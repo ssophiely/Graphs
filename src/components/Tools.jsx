@@ -22,7 +22,7 @@ export default function Tools() {
         setVertexCount={setVertexCount}
       />
       <hr className="hr" />
-      <Output rowHeaders={rowHeaders} />
+      <Output rowHeaders={rowHeaders} data={data} />
     </div>
   );
 }

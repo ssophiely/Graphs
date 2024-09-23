@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Matrix from "./Matrix.jsx";
 import Header from "./Header.jsx";
 
@@ -11,10 +11,23 @@ export default function MatrixComponent({
   setVertexCount,
 }) {
   const input = useRef();
-
+const currentRows=useRef(rowHeaders)
   const [columnHeaders, setColumnHeaders] = useState(
     Array.from({ length: vertexCount }, () => "")
   );
+
+  // useEffect(() => {
+  //   const uniqueElements = new Set();
+  //   const newRows = rowHeaders.map((item) => {
+  //     if (uniqueElements.has(item)) {
+  //       return "";
+  //     } else {
+  //       uniqueElements.add(item);
+  //       return item;
+  //     }
+  //   });
+  //   currentRows.current = newRows;
+  // }, [rowHeaders]);
 
   // Обработчик изменения значения в ячейке
   const handleChange = (rowIndex, colIndex, value) => {

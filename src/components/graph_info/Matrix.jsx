@@ -82,6 +82,7 @@ const Matrix = ({
                   <input
                     type="number"
                     value={cell}
+                    min="0"
                     disabled={
                       rowHeaders[rowIndex] === columnHeaders[colIndex]
                         ? true
@@ -95,6 +96,8 @@ const Matrix = ({
                     onChange={(e) =>
                       onChange(rowIndex, colIndex, e.target.value)
                     }
+                    onInput={(e) => {        if (parseInt(e.target.value) < 0) {
+                      e.target.value = ''}}}
                   />
                 </td>
               ))}
