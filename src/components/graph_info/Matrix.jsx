@@ -9,6 +9,7 @@ const Matrix = ({
   onInput,
   onDelete,
   onInsert,
+  onBlurFunc
 }) => {
   const rowRef = useRef(null);
 
@@ -66,7 +67,6 @@ const Matrix = ({
             <tr key={rowIndex}>
               <td
                 onContextMenu={(e) => showContext(e, rowIndex)}
-                id="row_header"
                 ref={rowRef}
                 contentEditable="true"
                 suppressContentEditableWarning={true}
@@ -74,6 +74,7 @@ const Matrix = ({
                   onInput(e.target.innerText, rowIndex);
                   cursorToEnd(e);
                 }}
+                onBlur={onBlurFunc}
               >
                 {rowHeaders[rowIndex]}
               </td>
@@ -96,8 +97,11 @@ const Matrix = ({
                     onChange={(e) =>
                       onChange(rowIndex, colIndex, e.target.value)
                     }
-                    onInput={(e) => {        if (parseInt(e.target.value) < 0) {
-                      e.target.value = ''}}}
+                    onInput={(e) => {
+                      if (parseInt(e.target.value) < 0) {
+                        e.target.value = "";
+                      }
+                    }}
                   />
                 </td>
               ))}

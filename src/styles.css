@@ -1,10 +1,15 @@
-.left {
-  background-color: rgb(157, 235, 255);
-  float: left;
-  width: 60%;
+.container {
+  display: flex;
+  justify-content: space-between; /* Распределяет элементы по горизонтали */
+  align-items: flex-start; /* Выравнивание элементов по верхнему краю */
+  height: 95vh; /* Задает высоту контейнера */
 }
+canvas {
+  border: 1px solid black;
+  margin-left: 1%;
+}
+
 .right {
-  float: right;
   width: 40%;
 }
 

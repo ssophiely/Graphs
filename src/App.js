@@ -1,13 +1,28 @@
-import React from "react";
-import Graph from "./components/graph/Graph.js";
+import React, { useState } from "react";
+import GraphComponent from "./components/graph/GraphComponent.jsx";
 import Tools from "./components/Tools.jsx";
 
 function App() {
+  const [vertexCount, setVertexCount] = useState(5);
+  const [rowHeaders, setRowHeaders] = useState(
+    Array.from({ length: vertexCount }, () => "")
+  );
+  const [data, setData] = useState(
+    [...Array(vertexCount)].map((e) => Array(vertexCount).fill(""))
+  );
+
   return (
-    <>
-      <Graph />
-      <Tools />
-    </>
+    <div className="container">
+      <GraphComponent headers={rowHeaders} data={data} />
+      <Tools
+        vertexCount={vertexCount}
+        rowHeaders={rowHeaders}
+        data={data}
+        setRowHeaders={setRowHeaders}
+        setVertexCount={setVertexCount}
+        setData={setData}
+      />
+    </div>
   );
 }
 

@@ -1,16 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import MatrixComponent from "./graph_info/MatrixComponent.jsx";
 import Output from "./graph_info/Output.jsx";
 
-export default function Tools() {
-  const [vertexCount, setVertexCount] = useState(5);
-  const [rowHeaders, setRowHeaders] = useState(
-    Array.from({ length: vertexCount }, () => "")
-  );
-  const [data, setData] = useState(
-    [...Array(vertexCount)].map((e) => Array(vertexCount).fill(""))
-  );
-
+export default function Tools({
+  vertexCount,
+  rowHeaders,
+  data,
+  setRowHeaders,
+  setVertexCount,
+  setData,
+}) {
   return (
     <div className="right">
       <MatrixComponent

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Matrix from "./Matrix.jsx";
 import Header from "./Header.jsx";
 
@@ -11,23 +11,25 @@ export default function MatrixComponent({
   setVertexCount,
 }) {
   const input = useRef();
-const currentRows=useRef(rowHeaders)
+
   const [columnHeaders, setColumnHeaders] = useState(
     Array.from({ length: vertexCount }, () => "")
   );
 
-  // useEffect(() => {
-  //   const uniqueElements = new Set();
-  //   const newRows = rowHeaders.map((item) => {
-  //     if (uniqueElements.has(item)) {
-  //       return "";
-  //     } else {
-  //       uniqueElements.add(item);
-  //       return item;
-  //     }
-  //   });
-  //   currentRows.current = newRows;
-  // }, [rowHeaders]);
+  function handleBlur() {
+    console.log("тут");
+    const set = new Set();
+    let newHeaders = rowHeaders.map((item) => {
+      if (set.has(item)) {
+        return "";
+      } else {
+        set.add(item);
+        return item;
+      }
+    });
+    setRowHeaders(newHeaders);
+    setColumnHeaders(newHeaders);
+  }
 
   // Обработчик изменения значения в ячейке
   const handleChange = (rowIndex, colIndex, value) => {
@@ -101,6 +103,7 @@ const currentRows=useRef(rowHeaders)
         onInput={handleInput}
         onDelete={handleDelete}
         onInsert={handleInsert}
+        onBlurFunc={handleBlur}
       />
     </>
   );
