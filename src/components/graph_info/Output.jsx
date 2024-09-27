@@ -1,7 +1,14 @@
 import React, { useRef, useState } from "react";
 import { findMinPath } from "../../algorithms/dijkstra.js";
 
-export default function Output({ rowHeaders, data }) {
+export default function Output({
+  rowHeaders,
+  data,
+  start,
+  end,
+  startOnChange,
+  endOnChange,
+}) {
   const startSelectRef = useRef();
   const endSelectRef = useRef();
 
@@ -29,7 +36,13 @@ export default function Output({ rowHeaders, data }) {
     <div>
       <div className="dropdown">
         <label htmlFor="dropdown1">Начальная вершина:&emsp;</label>
-        <select id="dropdown1" ref={startSelectRef}>
+        <select
+          id="dropdown1"
+          ref={startSelectRef}
+          value={start}
+          onChange={(e) => startOnChange(e)}
+        >
+          <option key={-1} value=""></option>
           {filteredItems.map((item, index) => (
             <option key={index} value={item}>
               {item}
@@ -39,7 +52,13 @@ export default function Output({ rowHeaders, data }) {
       </div>
       <div className="dropdown">
         <label htmlFor="dropdown2">Конечная вершина:&emsp;</label>
-        <select id="dropdown2" ref={endSelectRef}>
+        <select
+          id="dropdown2"
+          ref={endSelectRef}
+          value={end}
+          onChange={(e) => endOnChange(e)}
+        >
+          <option key={-1} value=""></option>
           {filteredItems.map((item, index) => (
             <option key={index} value={item}>
               {item}

@@ -1,8 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { generateCoordinates } from "../../funcs/generateCoords";
-import ContextMenu from "./ContextMenu";
+import VertexContextMenu from "./VertexContextMenu.jsx";
 
-export default function GraphComponent({ headers, inpData }) {
+export default function GraphComponent({
+  headers,
+  setHeaders,
+  inpData,
+  start,
+  end,
+  setStart,
+  setEnd,
+}) {
   const canvasRef = useRef(null);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -12,15 +20,100 @@ export default function GraphComponent({ headers, inpData }) {
   const [names, setNames] = useState(headers);
   const [data, setData] = useState(inpData);
 
-  const [index, setIndex] = React.useState(null);
   const [context, setContext] = React.useState(false);
   const [xyPosition, setxyPosition] = React.useState({ x: 0, y: 0 });
+  const [clickedVertex, setClickedVertex] = useState(null);
+  const [menuOn, setMenuOn] = useState(true);
+
+  // контекстное меню
+  const showContext = (event, y) => {
+    setContext(false);
+    const positionChange = {
+      x: event.pageX,
+      y: event.pageY,
+    };
+    setxyPosition(positionChange);
+    setContext(true);
+  };
+
+  const hideContext = (event) => {
+    setContext(false);
+  };
+
+  function handleClick(e) {
+    const mousePos = getMousePos(canvasRef.current, e);
+    const clickedCircle = vertexes.find((circle) => {
+      return (
+        (mousePos.x - circle.x) ** 2 + (mousePos.y - circle.y) ** 2 <=
+        circle.radius ** 2
+      );
+    });
+    if (clickedCircle) {
+      if (!menuOn) {
+        hideContext(e);
+        setMenuOn(true);
+        return;
+      }
+      setClickedVertex(clickedCircle);
+      showContext(e);
+    } else {
+      hideContext(e);
+      setMenuOn(true);
+    }
+  }
+
+  // выбор вершины начальной
+  const handleStart = () => {
+    setVertexes(
+      vertexes.map((v) => {
+        if (v.label === clickedVertex.label) {
+          if (v.label === end) {
+            setEnd("");
+          }
+          setStart(v.label);
+          return { ...v, fillStyle: "green" };
+        }
+        if (v.label === end) {
+          return { ...v, fillStyle: "red" };
+        }
+        return { ...v, fillStyle: "blue" };
+      })
+    );
+  };
+
+  // выбор вершины конечной
+  const handleEnd = () => {
+    setVertexes(
+      vertexes.map((v) => {
+        if (v.label === clickedVertex.label) {
+          if (v.label === start) {
+            setStart("");
+          }
+          setEnd(v.label);
+          return { ...v, fillStyle: "red" };
+        }
+        if (v.label === start) {
+          return { ...v, fillStyle: "green" };
+        }
+        return { ...v, fillStyle: "blue" };
+      })
+    );
+  };
+
+  // удаление вершины
+  const removeVertex = () => {
+    const h = headers.map((x) => {
+      if (x === clickedVertex.label) return "";
+      else return x;
+    });
+    setHeaders(h);
+  };
 
   // рисуем круг
   const drawCircle = (vert, ctx) => {
     ctx.beginPath();
     ctx.arc(vert.x, vert.y, 20, 0, Math.PI * 2);
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = vert.fillStyle;
     ctx.lineWidth = 2;
     ctx.fill();
 
@@ -86,7 +179,18 @@ export default function GraphComponent({ headers, inpData }) {
             vertex.id = ind;
             return vertex;
           }
-          console.log("error!");
+          console.log(names, h)
+          if (!names.includes(h)) {
+            let [xc, yc] = generateCoordinates(canvasRef.current, vertexes);
+            return {
+              label: h,
+              x: xc,
+              y: yc,
+              radius: 20,
+              id: ind,
+              fillStyle: "blue",
+            };
+          }
         }
         return null;
       });
@@ -109,6 +213,7 @@ export default function GraphComponent({ headers, inpData }) {
           y: yc,
           radius: 20,
           id: ind,
+          fillStyle: "blue",
         };
       }
       return null;
@@ -119,7 +224,6 @@ export default function GraphComponent({ headers, inpData }) {
 
   // поменяли веса в таблице
   useEffect(() => {
-    console.log(inpData);
     setData(inpData);
 
     canvasRef.current
@@ -182,6 +286,7 @@ export default function GraphComponent({ headers, inpData }) {
 
   const handleMouseMove = (e) => {
     if (isDragging && selectedVertex) {
+      setMenuOn(false);
       const mousePos = getMousePos(canvasRef.current, e);
       const newCircles = vertexes.map((circle) => {
         if (circle.label === selectedVertex.label) {
@@ -214,7 +319,7 @@ export default function GraphComponent({ headers, inpData }) {
   };
 
   return (
-    <>
+    <div>
       <canvas
         ref={canvasRef}
         width="880"
@@ -222,16 +327,18 @@ export default function GraphComponent({ headers, inpData }) {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onClick={(e) => handleClick(e)}
       />
-      <ContextMenu
+      <VertexContextMenu
         context={context}
         xyPosition={xyPosition}
         setContext={setContext}
-        onDelete={() => onDelete(index)}
-        onInsert={() => onInsert(index)}
-        add={rowHeaders.length < 10}
-        del={rowHeaders.length > 2}
+        del={vertexes.length > 2}
+        addArc={false}
+        onStart={handleStart}
+        onEnd={handleEnd}
+        onDelete={removeVertex}
       />
-    </>
+    </div>
   );
 }

@@ -9,6 +9,11 @@ export default function Tools({
   setRowHeaders,
   setVertexCount,
   setData,
+
+  start,
+  end,
+  startOnChange,
+  endOnChange
 }) {
   return (
     <div className="right">
@@ -21,7 +26,14 @@ export default function Tools({
         setVertexCount={setVertexCount}
       />
       <hr className="hr" />
-      <Output rowHeaders={rowHeaders} data={data} />
+      <Output
+        rowHeaders={rowHeaders}
+        data={data}
+        start={start}
+        end={end}
+        startOnChange={startOnChange}
+        endOnChange={endOnChange}
+      />
     </div>
   );
 }

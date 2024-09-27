@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Matrix from "./Matrix.jsx";
 import Header from "./Header.jsx";
 
@@ -16,8 +16,11 @@ export default function MatrixComponent({
     Array.from({ length: vertexCount }, () => "")
   );
 
+  useEffect(() => {
+    setColumnHeaders(rowHeaders);
+  }, [rowHeaders]);
+
   function handleBlur() {
-    console.log("тут");
     const set = new Set();
     let newHeaders = rowHeaders.map((item) => {
       if (set.has(item)) {
@@ -48,11 +51,7 @@ export default function MatrixComponent({
     let value = input.current.value;
     value = value < 2 ? 2 : value;
     value = value > 10 ? 10 : value;
-    console.log(
-      "value",
-      value,
-      Array.from({ length: value }, () => "")
-    );
+
     setVertexCount(value);
     setColumnHeaders(Array.from({ length: value }, () => ""));
     setRowHeaders(Array.from({ length: value }, () => ""));
@@ -107,7 +106,6 @@ export default function MatrixComponent({
     newHeaders[index] = value;
     setRowHeaders(newHeaders);
     setColumnHeaders(newHeaders);
-    console.log(newHeaders);
   }
 
   return (
