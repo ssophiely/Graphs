@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div className="container">
-      <GraphComponent headers={rowHeaders} data={data} />
+      <GraphComponent headers={rowHeaders} inpData={data} />
       <Tools
         vertexCount={vertexCount}
         rowHeaders={rowHeaders}

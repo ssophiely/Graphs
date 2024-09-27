@@ -48,7 +48,11 @@ export default function MatrixComponent({
     let value = input.current.value;
     value = value < 2 ? 2 : value;
     value = value > 10 ? 10 : value;
-
+    console.log(
+      "value",
+      value,
+      Array.from({ length: value }, () => "")
+    );
     setVertexCount(value);
     setColumnHeaders(Array.from({ length: value }, () => ""));
     setRowHeaders(Array.from({ length: value }, () => ""));
@@ -77,7 +81,25 @@ export default function MatrixComponent({
   }
 
   function handleInsert(i) {
-    console.log(i);
+    const newRows = rowHeaders.slice();
+    newRows.splice(i + 1, 0, "");
+    setRowHeaders(newRows);
+
+    const newCols = [...columnHeaders];
+    newCols.splice(i + 1, 0, "");
+    setColumnHeaders(newCols);
+
+    let newData = [...data];
+    newData.splice(
+      i + 1,
+      0,
+      Array.from({ length: columnHeaders.length }, () => "")
+    );
+
+    for (let j = 0; j < newData.length; j++) {
+      newData[j].splice(i + 1, 0, "");
+    }
+    setData(newData);
   }
 
   function handleInput(value, index) {
@@ -85,6 +107,7 @@ export default function MatrixComponent({
     newHeaders[index] = value;
     setRowHeaders(newHeaders);
     setColumnHeaders(newHeaders);
+    console.log(newHeaders);
   }
 
   return (

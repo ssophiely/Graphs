@@ -9,7 +9,7 @@ const Matrix = ({
   onInput,
   onDelete,
   onInsert,
-  onBlurFunc
+  onBlurFunc,
 }) => {
   const rowRef = useRef(null);
 
@@ -85,12 +85,16 @@ const Matrix = ({
                     value={cell}
                     min="0"
                     disabled={
-                      rowHeaders[rowIndex] === columnHeaders[colIndex]
+                      rowHeaders[rowIndex] === columnHeaders[colIndex] ||
+                      rowHeaders[rowIndex] === "" ||
+                      columnHeaders[colIndex] === ""
                         ? true
                         : false
                     }
                     style={
-                      rowHeaders[rowIndex] === columnHeaders[colIndex]
+                      rowHeaders[rowIndex] === columnHeaders[colIndex] ||
+                      rowHeaders[rowIndex] === "" ||
+                      columnHeaders[colIndex] === ""
                         ? { caretColor: "transparent" }
                         : null
                     }
