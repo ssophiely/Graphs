@@ -1,4 +1,5 @@
 export function findMinPath(data, start, end) {
+  console.log(data)
   const distance = Array(data.length).fill(Infinity);
   const visited = Array(data.length).fill(false);
   const previous = Array(data.length).fill(null);

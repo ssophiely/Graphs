@@ -1,15 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
-import { generateCoordinates } from "../../funcs/generateCoords";
+import { generateCoordinates, getMousePos } from "../../funcs/generateCoords";
 import VertexContextMenu from "./VertexContextMenu.jsx";
+import CanvasContextMenu from "./CanvasContextMenu.jsx";
+import {
+  drawArrow,
+  drawCircle,
+  drawArrowWithShadow,
+} from "../../funcs/drawing.js";
 
 export default function GraphComponent({
   headers,
   setHeaders,
   inpData,
+  setInpData,
   start,
   end,
   setStart,
   setEnd,
+  setDeleted,
+  setInserted,
+  path,
+  setPath,
 }) {
   const canvasRef = useRef(null);
 
@@ -18,29 +29,33 @@ export default function GraphComponent({
   const [vertexes, setVertexes] = useState([]);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [names, setNames] = useState(headers);
-  const [data, setData] = useState(inpData);
 
   const [context, setContext] = React.useState(false);
   const [xyPosition, setxyPosition] = React.useState({ x: 0, y: 0 });
   const [clickedVertex, setClickedVertex] = useState(null);
   const [menuOn, setMenuOn] = useState(true);
 
-  // контекстное меню
-  const showContext = (event, y) => {
-    setContext(false);
+  const [canvasContext, setCanvasContext] = React.useState(false);
+  const [canvasXYPosition, setCanvasXYPosition] = React.useState({
+    x: 0,
+    y: 0,
+  });
+
+  const [clickedCoords, setClickedCoords] = useState(null);
+
+  // контекстные меню по клику
+  const showContext = (event, contextFunc, xyFunc) => {
+    contextFunc(false);
     const positionChange = {
       x: event.pageX,
       y: event.pageY,
     };
-    setxyPosition(positionChange);
-    setContext(true);
-  };
-
-  const hideContext = (event) => {
-    setContext(false);
+    xyFunc(positionChange);
+    contextFunc(true);
   };
 
   function handleClick(e) {
+    e.preventDefault();
     const mousePos = getMousePos(canvasRef.current, e);
     const clickedCircle = vertexes.find((circle) => {
       return (
@@ -50,14 +65,16 @@ export default function GraphComponent({
     });
     if (clickedCircle) {
       if (!menuOn) {
-        hideContext(e);
+        setContext(false);
         setMenuOn(true);
         return;
       }
+      setCanvasContext(false);
       setClickedVertex(clickedCircle);
-      showContext(e);
+      showContext(e, setContext, setxyPosition);
     } else {
-      hideContext(e);
+      showContext(e, setCanvasContext, setCanvasXYPosition);
+      setContext(false);
       setMenuOn(true);
     }
   }
@@ -71,12 +88,12 @@ export default function GraphComponent({
             setEnd("");
           }
           setStart(v.label);
-          return { ...v, fillStyle: "green" };
+          return { ...v, fillStyle: "LightCyan" };
         }
         if (v.label === end) {
-          return { ...v, fillStyle: "red" };
+          return { ...v, fillStyle: "MediumTurquoise" };
         }
-        return { ...v, fillStyle: "blue" };
+        return { ...v, fillStyle: "PaleTurquoise" };
       })
     );
   };
@@ -90,105 +107,138 @@ export default function GraphComponent({
             setStart("");
           }
           setEnd(v.label);
-          return { ...v, fillStyle: "red" };
+          return { ...v, fillStyle: "MediumTurquoise" };
         }
         if (v.label === start) {
-          return { ...v, fillStyle: "green" };
+          return { ...v, fillStyle: "LightCyan" };
         }
-        return { ...v, fillStyle: "blue" };
+        return { ...v, fillStyle: "PaleTurquoise" };
       })
     );
   };
 
   // удаление вершины
   const removeVertex = () => {
-    const h = headers.map((x) => {
-      if (x === clickedVertex.label) return "";
-      else return x;
+    setDeleted(clickedVertex.id);
+    setTimeout(() => {
+      setDeleted(null);
+    }, 500);
+    if (clickedVertex.label === start) setStart("");
+    if (clickedVertex.label === end) setEnd("");
+  };
+
+  // добавление вершины
+  const addVertex = (label) => {
+    const newHeaders = headers.slice();
+    if (headers.includes("")) {
+      const ind = headers.indexOf("");
+      newHeaders[ind] = label;
+      setHeaders((prev) => {
+        setClickedCoords({
+          x: canvasXYPosition.x,
+          y: canvasXYPosition.y,
+          headers: newHeaders,
+        });
+        return newHeaders;
+      });
+    } else {
+      setClickedCoords({
+        x: canvasXYPosition.x,
+        y: canvasXYPosition.y,
+        headers: newHeaders,
+      });
+      setTimeout(() => {
+        setInserted({ ind: names.length - 1, val: label });
+      }, 200);
+      setTimeout(() => {
+        setInserted(null);
+      }, 100);
+    }
+  };
+
+  // операции с ребрами -----------------------------------------------------
+  // изменение веса ребра
+  function handleChangeArc(label, value) {
+    const newData = inpData.map((row, rIdx) => {
+      if (rIdx === clickedVertex.id) {
+        const newRow = [...row];
+        const colIndex = headers.indexOf(label);
+        newRow[colIndex] = value;
+        return newRow;
+      }
+      return row;
     });
-    setHeaders(h);
-  };
+    setInpData(newData);
+  }
 
-  // рисуем круг
-  const drawCircle = (vert, ctx) => {
-    ctx.beginPath();
-    ctx.arc(vert.x, vert.y, 20, 0, Math.PI * 2);
-    ctx.fillStyle = vert.fillStyle;
-    ctx.lineWidth = 2;
-    ctx.fill();
+  // отслеживание изменений ----------------------------------------------------
+  useEffect(() => {
+    const ctx = canvasRef.current.getContext("2d");
+    if (path !== null) {
+      const func = async () => {
+        for (let i = 0; i < path.length - 1; i++) {
+          const c1 = vertexes.find((v) => v.id === path[i]);
+          const c2 = vertexes.find((v) => v.id === path[i + 1]);
+          drawArrowWithShadow(c1, c2, inpData[i][i + 1], ctx);
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        setPath(null);
+      };
+      func();
+    } else {
+      canvasRef.current
+        .getContext("2d")
+        .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      vertexes.forEach((item) => {
+        drawCircle(item, canvasRef.current.getContext("2d"));
+      });
 
-    ctx.fillStyle = "black";
-    ctx.font = "13px Serif";
-    ctx.fillText(vert.label, vert.x - 25, vert.y - vert.radius - 4);
-    ctx.closePath();
-  };
-
-  // рисуем стрелку
-  const drawArrow = (circle1, circle2, weight, ctx) => {
-    if (weight === 0) {
-      return;
+      for (let i = 0; i < inpData.length; i++) {
+        for (let j = 0; j < inpData[i].length; j++) {
+          const circle1 = vertexes.find((v) => v.id === i);
+          const circle2 = vertexes.find((v) => v.id === j);
+          const weight = parseInt(inpData[i][j]) ? parseInt(inpData[i][j]) : 0;
+          drawArrow(
+            circle1,
+            circle2,
+            weight,
+            canvasRef.current.getContext("2d")
+          );
+        }
+      }
     }
-    if (circle1 && circle2) {
-      const dx = circle2.x - circle1.x;
-      const dy = circle2.y - circle1.y;
-      const angle = Math.atan2(dy, dx);
-
-      // Позиции конечных точек стрелки
-      const startX = circle1.x + Math.cos(angle) * circle1.radius;
-      const startY = circle1.y + Math.sin(angle) * circle1.radius;
-      const endX = circle2.x - Math.cos(angle) * circle2.radius;
-      const endY = circle2.y - Math.sin(angle) * circle2.radius;
-
-      // Рисуем дугу
-      ctx.beginPath();
-      ctx.strokeStyle = "grey";
-      ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo((startX + endX) / 2, startY, endX, endY); // искажение для формирования дуги
-      ctx.stroke();
-
-      // Рисуем стрелку
-      const arrowSize = 15;
-      ctx.save();
-      ctx.translate(endX, endY);
-      ctx.rotate(angle);
-      ctx.beginPath();
-      ctx.moveTo(-arrowSize, -arrowSize / 2);
-      ctx.lineTo(0, 0);
-      ctx.lineTo(-arrowSize, arrowSize / 2);
-      ctx.fillStyle = "grey";
-      ctx.fill();
-      ctx.restore();
-
-      ctx.font = "bold 25px Serif";
-      ctx.fillStyle = "#FF8C00";
-
-      const toX = circle2.x + 100 * Math.cos(angle);
-      const toY = circle2.y + 100 * Math.sin(angle);
-      const midWeightX = (circle1.x + toX) / 2 + (circle1.y - circle2.y) / 10;
-      const midWeightY = (circle1.y + toY) / 2 + (circle2.x - circle1.x) / 10;
-      ctx.fillText(weight, midWeightX, midWeightY);
-    }
-  };
+  }, [path]);
 
   useEffect(() => {
+    console.log(start, end);
     if (headers.length !== names.length) {
       let newVertexes = headers.map((h, ind) => {
         if (h !== "") {
+          const color =
+            h === start
+              ? "LightCyan"
+              : h === end
+              ? "MediumTurquoise"
+              : "PaleTurquoise";
           const vertex = vertexes.find((v) => v.label === h);
           if (vertex) {
             vertex.id = ind;
+            vertex.fillStyle = color;
             return vertex;
           }
-          console.log(names, h)
           if (!names.includes(h)) {
-            let [xc, yc] = generateCoordinates(canvasRef.current, vertexes);
+            let [xc, yc] =
+              clickedCoords === null
+                ? generateCoordinates(canvasRef.current, vertexes)
+                : [clickedCoords.x, clickedCoords.y];
+            setClickedCoords(null);
             return {
               label: h,
               x: xc,
               y: yc,
               radius: 20,
               id: ind,
-              fillStyle: "blue",
+              fillStyle: color,
             };
           }
         }
@@ -198,34 +248,42 @@ export default function GraphComponent({
       setVertexes(newVertexes.filter((el) => el !== null));
       return;
     }
-
     let newVertexes = headers.map((h, ind) => {
       if (h !== "") {
+        const color =
+          h === start
+            ? "LightCyan"
+            : h === end
+            ? "MediumTurquoise"
+            : "PaleTurquoise";
         const vertex = vertexes.find((v) => v.id === ind);
         if (vertex) {
           vertex.label = h;
+          vertex.fillStyle = color;
           return vertex;
         }
-        let [xc, yc] = generateCoordinates(canvasRef.current, vertexes);
+        let [xc, yc] =
+          clickedCoords === null
+            ? generateCoordinates(canvasRef.current, vertexes)
+            : [clickedCoords.x, clickedCoords.y];
+        setClickedCoords(null);
         return {
           label: h,
           x: xc,
           y: yc,
           radius: 20,
           id: ind,
-          fillStyle: "blue",
+          fillStyle: color,
         };
       }
       return null;
     });
     setVertexes(newVertexes.filter((el) => el !== null));
     setNames(headers);
-  }, [headers]);
+  }, [headers, start, end]);
 
   // поменяли веса в таблице
   useEffect(() => {
-    setData(inpData);
-
     canvasRef.current
       .getContext("2d")
       .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -251,11 +309,11 @@ export default function GraphComponent({
     vertexes.forEach((item) => {
       drawCircle(item, ctx);
     });
-    for (let i = 0; i < data?.length; i++) {
-      for (let j = 0; j < data[i]?.length; j++) {
+    for (let i = 0; i < inpData?.length; i++) {
+      for (let j = 0; j < inpData[i]?.length; j++) {
         const circle1 = vertexes.find((v) => v.id === i);
         const circle2 = vertexes.find((v) => v.id === j);
-        const weight = parseInt(data[i][j]) ? parseInt(data[i][j]) : 0;
+        const weight = parseInt(inpData[i][j]) ? parseInt(inpData[i][j]) : 0;
         drawArrow(circle1, circle2, weight, canvasRef.current.getContext("2d"));
       }
     }
@@ -310,34 +368,58 @@ export default function GraphComponent({
     }
   };
 
-  const getMousePos = (canvas, evt) => {
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: evt.clientX - rect.left,
-      y: evt.clientY - rect.top,
-    };
-  };
-
   return (
-    <div>
+    <div id="left">
       <canvas
         ref={canvasRef}
         width="880"
-        height="600"
+        height="550"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onClick={(e) => handleClick(e)}
+        onContextMenu={(e) => handleClick(e)}
+        onClick={(e) => {
+          setContext(false);
+          setCanvasContext(false);
+        }}
       />
       <VertexContextMenu
         context={context}
         xyPosition={xyPosition}
         setContext={setContext}
         del={vertexes.length > 2}
-        addArc={false}
+        addArc={inpData[clickedVertex?.id]?.some((el, ind) => {
+          return (
+            ["", "0"].includes(el) &&
+            headers[ind] != "" &&
+            headers[ind] != clickedVertex?.label
+          );
+        })}
+        changeArc={inpData[clickedVertex?.id]?.some(
+          (el) => !["", "0"].includes(el)
+        )}
         onStart={handleStart}
         onEnd={handleEnd}
         onDelete={removeVertex}
+        onChangeArc={handleChangeArc}
+        names={headers.filter((h, ind) => {
+          if (!clickedVertex) return false;
+          return !["", "0"].includes(inpData[clickedVertex?.id][ind]);
+        })}
+        notReachedNames={headers.filter((h, ind) => {
+          if (!clickedVertex) return false;
+          return (
+            ["", "0"].includes(inpData[clickedVertex?.id][ind]) &&
+            !["", clickedVertex.label].includes(headers[ind])
+          );
+        })}
+      />
+      <CanvasContextMenu
+        context={canvasContext}
+        xyPosition={canvasXYPosition}
+        setContext={setCanvasContext}
+        insert={vertexes.length < 10}
+        onInsert={addVertex}
       />
     </div>
   );

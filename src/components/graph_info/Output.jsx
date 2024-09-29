@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { findMinPath } from "../../algorithms/dijkstra.js";
 
 export default function Output({
@@ -8,6 +8,7 @@ export default function Output({
   end,
   startOnChange,
   endOnChange,
+  setResultPath
 }) {
   const startSelectRef = useRef();
   const endSelectRef = useRef();
@@ -28,8 +29,15 @@ export default function Output({
       rowHeaders.indexOf(endSelectRef.current.value)
     );
 
-    setLength(len);
-    setPath(path.map((v) => rowHeaders[v]).join("🠒"));
+    if (len === undefined || len === Infinity || len === 0) {
+      setLength(0);
+      setPath("пути между вершинами не существует");
+      setResultPath(null)
+    } else {
+      setLength(len);
+      setPath(path.map((v) => rowHeaders[v]).join("🠒"));
+      setResultPath(path)
+    }
   }
 
   return (

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import MatrixComponent from "./graph_info/MatrixComponent.jsx";
 import Output from "./graph_info/Output.jsx";
 
@@ -9,11 +9,13 @@ export default function Tools({
   setRowHeaders,
   setVertexCount,
   setData,
-
   start,
   end,
   startOnChange,
-  endOnChange
+  endOnChange,
+  inserted,
+  deleted,
+  setPath
 }) {
   return (
     <div className="right">
@@ -24,6 +26,8 @@ export default function Tools({
         setData={setData}
         vertexCount={vertexCount}
         setVertexCount={setVertexCount}
+        deleted={deleted}
+        inserted={inserted}
       />
       <hr className="hr" />
       <Output
@@ -33,6 +37,7 @@ export default function Tools({
         end={end}
         startOnChange={startOnChange}
         endOnChange={endOnChange}
+        setResultPath={setPath}
       />
     </div>
   );

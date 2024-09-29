@@ -9,6 +9,8 @@ export default function MatrixComponent({
   setData,
   vertexCount,
   setVertexCount,
+  inserted,
+  deleted,
 }) {
   const input = useRef();
 
@@ -19,6 +21,14 @@ export default function MatrixComponent({
   useEffect(() => {
     setColumnHeaders(rowHeaders);
   }, [rowHeaders]);
+
+  useEffect(() => {
+    if (deleted !== null) handleDelete(deleted);
+  }, [deleted]);
+
+  useEffect(() => {
+    if (inserted) handleInsert(inserted.ind, inserted.val);
+  }, [inserted]);
 
   function handleBlur() {
     const set = new Set();
@@ -79,13 +89,19 @@ export default function MatrixComponent({
     setData(newData);
   }
 
-  function handleInsert(i) {
+  function handleInsert(i, h) {
+    h = h == null ? "" : h;
+    if (rowHeaders.includes(h)) {
+      alert(`Вершина с названием ${h} уже существует!`);
+      return;
+    }
+
     const newRows = rowHeaders.slice();
-    newRows.splice(i + 1, 0, "");
+    newRows.splice(i + 1, 0, h);
     setRowHeaders(newRows);
 
     const newCols = [...columnHeaders];
-    newCols.splice(i + 1, 0, "");
+    newCols.splice(i + 1, 0, h);
     setColumnHeaders(newCols);
 
     let newData = [...data];

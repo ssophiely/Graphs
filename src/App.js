@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import GraphComponent from "./components/graph/GraphComponent.jsx";
 import Tools from "./components/Tools.jsx";
+import ExportImportComponent from "./components/ExportImportComponent.jsx";
 
 function App() {
   const [vertexCount, setVertexCount] = useState(5);
@@ -13,38 +14,63 @@ function App() {
 
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
-
   function handleStartChange(e) {
+    console.log(5, e.target.value)
     setStart(e.target.value);
   }
   function handleEndChange(e) {
     setEnd(e.target.value);
   }
 
+  const [deleted, setDeleted] = useState(null);
+  const [inserted, setInserted] = useState(null);
+
+  const [path, setPath] = useState(null);
+
   return (
-    <div className="container">
-      <GraphComponent
+    <>
+      <ExportImportComponent
         headers={rowHeaders}
-        setHeaders={setRowHeaders}
-        inpData={data}
+        data={data}
         start={start}
         end={end}
+        setHeaders={setRowHeaders}
+        setData={setData}
         setStart={setStart}
         setEnd={setEnd}
       />
-      <Tools
-        vertexCount={vertexCount}
-        rowHeaders={rowHeaders}
-        data={data}
-        setRowHeaders={setRowHeaders}
-        setVertexCount={setVertexCount}
-        setData={setData}
-        start={start}
-        end={end}
-        startOnChange={handleStartChange}
-        endOnChange={handleEndChange}
-      />
-    </div>
+      <div className="container">
+        <GraphComponent
+          headers={rowHeaders}
+          setHeaders={setRowHeaders}
+          inpData={data}
+          setInpData={setData}
+          start={start}
+          end={end}
+          setStart={setStart}
+          setEnd={setEnd}
+          setDeleted={setDeleted}
+          setInserted={setInserted}
+          path={path}
+          setPath={setPath}
+        />
+        <Tools
+          vertexCount={vertexCount}
+          rowHeaders={rowHeaders}
+          data={data}
+          setRowHeaders={setRowHeaders}
+          setVertexCount={setVertexCount}
+          setData={setData}
+          start={start}
+          end={end}
+          startOnChange={handleStartChange}
+          endOnChange={handleEndChange}
+          deleted={deleted}
+          inserted={inserted}
+          setPath={setPath}
+        />
+      </div>
+    </>
   );
 }
 
