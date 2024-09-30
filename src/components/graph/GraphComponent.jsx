@@ -373,7 +373,7 @@ export default function GraphComponent({
       <canvas
         ref={canvasRef}
         width="880"
-        height="550"
+        height="630"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

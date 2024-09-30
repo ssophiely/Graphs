@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { findMinPath } from "../../algorithms/dijkstra.js";
+import { floyd } from "../../algorithms/floyd.js";
 
 export default function Output({
   rowHeaders,
@@ -8,83 +9,64 @@ export default function Output({
   end,
   startOnChange,
   endOnChange,
-  setResultPath
+  setResultPath,
 }) {
   const startSelectRef = useRef();
   const endSelectRef = useRef();
 
-  const [length, setLength] = useState(null);
-  const [path, setPath] = useState("");
+  // const [length, setLength] = useState(null);
+  // const [path, setPath] = useState("");
 
   const filteredItems = rowHeaders.filter((item) => item.trim() !== "");
 
   function handleClick() {
-    const numData = data.map((v) =>
-      v.map((x) => (parseInt(x) ? parseInt(x) : 0))
-    );
+    // const numData = data.map((v) =>
+    //   v.map((x) => (parseInt(x) ? parseInt(x) : 0))
+    // );
 
-    let [len, path] = findMinPath(
-      numData,
-      rowHeaders.indexOf(startSelectRef.current.value),
-      rowHeaders.indexOf(endSelectRef.current.value)
-    );
+    // let [len, path] = findMinPath(
+    //   numData,
+    //   rowHeaders.indexOf(startSelectRef.current.value),
+    //   rowHeaders.indexOf(endSelectRef.current.value)
+    // );
 
-    if (len === undefined || len === Infinity || len === 0) {
-      setLength(0);
-      setPath("пути между вершинами не существует");
-      setResultPath(null)
-    } else {
-      setLength(len);
-      setPath(path.map((v) => rowHeaders[v]).join("🠒"));
-      setResultPath(path)
-    }
+    // if (len === undefined || len === Infinity || len === 0) {
+    //   setLength(0);
+    //   setPath("пути между вершинами не существует");
+    //   setResultPath(null);
+    // } else {
+    //   setLength(len);
+    //   setPath(path.map((v) => rowHeaders[v]).join("🠒"));
+    //   setResultPath(path);
+    // }
+    floyd(data);
   }
 
   return (
     <div>
-      <div className="dropdown">
-        <label htmlFor="dropdown1">Начальная вершина:&emsp;</label>
-        <select
-          id="dropdown1"
-          ref={startSelectRef}
-          value={start}
-          onChange={(e) => startOnChange(e)}
-        >
-          <option key={-1} value=""></option>
-          {filteredItems.map((item, index) => (
-            <option key={index} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="dropdown">
-        <label htmlFor="dropdown2">Конечная вершина:&emsp;</label>
-        <select
-          id="dropdown2"
-          ref={endSelectRef}
-          value={end}
-          onChange={(e) => endOnChange(e)}
-        >
-          <option key={-1} value=""></option>
-          {filteredItems.map((item, index) => (
-            <option key={index} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </div>
-      <br />
       <button className="dijkstra_btn" id="btn" onClick={handleClick}>
-        Найти кратчайший путь
+        Рассчитать расстояния
       </button>
       <hr className="hr" />
-      <p id="result">
-        Длина пути:&emsp;<span>{length}</span>
-      </p>
-      <p id="result">
-        Список вершин:&emsp;<span>{path}</span>
-      </p>
+
+      <table className="res_table">
+        <thead>
+          <tr>
+            <th>Dijkstra's algorithm</th>
+            <th>Floyd's algorithm</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gloria</td>
+            <td>Reeves</td>
+          </tr>
+          <tr>
+            <td>Gloria</td>
+            <td>Reeves</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }

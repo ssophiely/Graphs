@@ -286,3 +286,38 @@ body {
   display: flex;
   align-items: center;
 }
+
+/* Результирующая таблица */
+.res_table {
+	width: 98%;
+	margin-bottom: 20px;
+  margin-top: 10px;
+  margin-left: 2%;
+	border: 5px solid #fff;
+	border-top: 5px solid #fff;
+	border-bottom: 3px solid #fff;
+	border-collapse: collapse; 
+	outline: 3px solid #e7f3ff;
+	font-size: 15px;
+	background: #fff!important;
+}
+.res_table th {
+	font-weight: bold;
+	padding: 7px;
+	background: #e7f3ff;
+	border: none;
+	text-align: left;
+	font-size: 15px;
+	border-top: 3px solid #fff;
+	border-bottom: 3px solid #e7f3ff;
+}
+.res_table td {
+	padding: 7px;
+	border: none;
+	border-top: 3px solid #fff;
+	border-bottom: 3px solid #fff;
+	font-size: 15px;
+}
+.res_table tbody tr:nth-child(even){
+	background: #f8f8f8!important;
+}
