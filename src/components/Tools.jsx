@@ -15,7 +15,9 @@ export default function Tools({
   endOnChange,
   inserted,
   deleted,
-  setPath
+  setPath,
+  setFlag,
+  flag
 }) {
   return (
     <div className="right">
@@ -38,6 +40,8 @@ export default function Tools({
         startOnChange={startOnChange}
         endOnChange={endOnChange}
         setResultPath={setPath}
+        setFlag={setFlag}
+        flag={flag}
       />
     </div>
   );

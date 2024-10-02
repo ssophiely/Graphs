@@ -21,6 +21,7 @@ export default function GraphComponent({
   setInserted,
   path,
   setPath,
+  flag
 }) {
   const canvasRef = useRef(null);
 
@@ -207,7 +208,7 @@ export default function GraphComponent({
         }
       }
     }
-  }, [path]);
+  }, [flag]);
 
   useEffect(() => {
     console.log(start, end);

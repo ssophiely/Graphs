@@ -21,6 +21,8 @@ function App() {
   function handleEndChange(e) {
     setEnd(e.target.value);
   }
+  const [flag, setFlag] = useState(1);
+
 
   const [deleted, setDeleted] = useState(null);
   const [inserted, setInserted] = useState(null);
@@ -53,6 +55,7 @@ function App() {
           setInserted={setInserted}
           path={path}
           setPath={setPath}
+          flag={flag}
         />
         <Tools
           vertexCount={vertexCount}
@@ -68,6 +71,8 @@ function App() {
           deleted={deleted}
           inserted={inserted}
           setPath={setPath}
+          setFlag={setFlag}
+          flag={flag}
         />
       </div>
     </>

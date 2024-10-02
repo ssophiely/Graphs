@@ -93,7 +93,7 @@ const drawArrowWithShadow = (circle1, circle2, weight, ctx) => {
     ctx.quadraticCurveTo((startX + endX) / 2, startY, endX, endY); // искажение для формирования дуги
 
     // Настройка стиля для свечения
-    ctx.shadowColor = "rgba(218, 165, 32, 1)"; // Цвет свечения (например, золотистый)
+    ctx.shadowColor = "rgba(139, 0, 0, 1)"; // Цвет свечения (например, золотистый)
     ctx.shadowBlur = 13; // Размытие
     ctx.shadowOffsetX = 0; // Смещение по X
     ctx.shadowOffsetY = 0; // Смещение по Y
