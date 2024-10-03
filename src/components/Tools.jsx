@@ -31,7 +31,7 @@ export default function Tools({
       />
       <hr className="hr" />
       <Output
-        rowHeaders={rowHeaders}
+        headers={rowHeaders}
         data={data}
         start={start}
         end={end}

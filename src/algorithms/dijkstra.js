@@ -1,5 +1,32 @@
-export function findMinPath(data, start, end) {
-  console.log(data)
+export function dijkstra(data) {
+  console.log(1)
+  const lenMatrix = Array.from({ length: data.length }, () =>
+    Array.from({ length: data.length }, () => 0)
+  );
+  const pathMatrix = Array.from({ length: data.length }, () =>
+    Array.from({ length: data.length }, () => 0)
+  );
+
+  data = data.map((r, i) => {
+    return r.map((v, j) => {
+      if (i === j || v === "" || v === 0) return 0;
+      return parseInt(v);
+    });
+  });
+
+  const start = performance.now();
+  for (let i = 0; i < data.length; i++)
+    for (let j = 0; j < data.length; j++) {
+      const [len, path] = findMinPath(data, i, j);
+      lenMatrix[i][j] = len;
+      pathMatrix[i][j] = path;
+    }
+  const end = performance.now();
+
+  return [lenMatrix, pathMatrix, end - start];
+}
+
+function findMinPath(data, start, end) {
   const distance = Array(data.length).fill(Infinity);
   const visited = Array(data.length).fill(false);
   const previous = Array(data.length).fill(null);

@@ -1,54 +1,48 @@
-import React, { useEffect, useRef, useState } from "react";
-import { findMinPath } from "../../algorithms/dijkstra.js";
+import React, { useState } from "react";
+import { dijkstra } from "../../algorithms/dijkstra.js";
 import { floyd } from "../../algorithms/floyd.js";
 
-export default function Output({
-  rowHeaders,
-  data,
-  start,
-  end,
-  startOnChange,
-  endOnChange,
-  setResultPath,
-}) {
-  const startSelectRef = useRef();
-  const endSelectRef = useRef();
+export default function Output({ headers, data }) {
+  const [dijTime, setDijTime] = useState(null);
+  const [floydTime, setFloydTime] = useState(null);
 
-  // const [length, setLength] = useState(null);
-  // const [path, setPath] = useState("");
-
-  const filteredItems = rowHeaders.filter((item) => item.trim() !== "");
+  const [dijRes, setDijRes] = useState(null);
+  const [floydRes, setFloydRes] = useState(null);
 
   function handleClick() {
-    // const numData = data.map((v) =>
-    //   v.map((x) => (parseInt(x) ? parseInt(x) : 0))
-    // );
+    // Флойд
+    const [fl_len, floyd_path, time2] = floyd(data);
+    const result2 = getResult(fl_len, floyd_path, fl_len.length);
+    setFloydRes(result2);
+    setFloydTime(time2 + "  ms");
 
-    // let [len, path] = findMinPath(
-    //   numData,
-    //   rowHeaders.indexOf(startSelectRef.current.value),
-    //   rowHeaders.indexOf(endSelectRef.current.value)
-    // );
+    // Джейкстра
+    const [dij_len, dij_path, time1] = dijkstra(data);
+    const result1 = getResult(dij_len, dij_path, dij_len.length);
+    setDijRes(result1);
+    setDijTime(time1 + "  ms");
+  }
 
-    // if (len === undefined || len === Infinity || len === 0) {
-    //   setLength(0);
-    //   setPath("пути между вершинами не существует");
-    //   setResultPath(null);
-    // } else {
-    //   setLength(len);
-    //   setPath(path.map((v) => rowHeaders[v]).join("🠒"));
-    //   setResultPath(path);
-    // }
-    floyd(data);
+  function getResult(lens, paths, n) {
+    const result = [];
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++) {
+        if (![0, Infinity].includes(lens[i][j]))
+          result.push(
+            `${headers[i]}🠒${headers[j]}    [${
+              paths.length > 0 &&
+              paths[i][j]?.map((el) => headers[el]).join(", ")
+            }]      ${lens[i][j]}`
+          );
+      }
+    return result;
   }
 
   return (
-    <div>
+    <div id="res">
       <button className="dijkstra_btn" id="btn" onClick={handleClick}>
-        Рассчитать расстояния
+        Сравнить алгоритмы
       </button>
-      <hr className="hr" />
-
       <table className="res_table">
         <thead>
           <tr>
@@ -58,12 +52,30 @@ export default function Output({
         </thead>
         <tbody>
           <tr>
-            <td>Gloria</td>
-            <td>Reeves</td>
+            <td>{dijTime}</td>
+            <td>{floydTime}</td>
           </tr>
           <tr>
-            <td>Gloria</td>
-            <td>Reeves</td>
+            <td>
+              <pre id="scrollable">
+                {dijRes?.map((string, index) => (
+                  <span key={index}>
+                    {string}
+                    {index < dijRes.length - 1 && <br />}
+                  </span>
+                ))}
+              </pre>
+            </td>
+            <td>
+              <pre id="scrollable">
+                {floydRes?.map((string, index) => (
+                  <span key={index}>
+                    {string}
+                    {index < floydRes.length - 1 && <br />}
+                  </span>
+                ))}
+              </pre>
+            </td>
           </tr>
         </tbody>
       </table>
