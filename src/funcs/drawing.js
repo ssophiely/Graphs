@@ -51,21 +51,21 @@ const drawArrow = (circle1, circle2, weight, ctx) => {
     ctx.restore();
 
     // текст
-    ctx.font = "bold 22px Serif";
-    ctx.fillStyle = "grey";
+    // ctx.font = "bold 22px Serif";
+    // ctx.fillStyle = "grey";
 
-    const controlX = (startX + endX) / 2;
-    const controlY = startY;
-    const offset = 40;
-    const textX =
-      endX -
-      (offset * (endX - controlX)) /
-        Math.hypot(endX - controlX, endY - controlY);
-    const textY =
-      endY -
-      (offset * (endY - controlY)) /
-        Math.hypot(endX - controlX, endY - controlY);
-    ctx.fillText(weight, textX, textY);
+    // const controlX = (startX + endX) / 2;
+    // const controlY = startY;
+    // const offset = 40;
+    // const textX =
+    //   endX -
+    //   (offset * (endX - controlX)) /
+    //     Math.hypot(endX - controlX, endY - controlY);
+    // const textY =
+    //   endY -
+    //   (offset * (endY - controlY)) /
+    //     Math.hypot(endX - controlX, endY - controlY);
+    // ctx.fillText(weight, textX, textY);
   }
 };
 
@@ -93,8 +93,8 @@ const drawArrowWithShadow = (circle1, circle2, weight, ctx) => {
     ctx.quadraticCurveTo((startX + endX) / 2, startY, endX, endY); // искажение для формирования дуги
 
     // Настройка стиля для свечения
-    ctx.shadowColor = "rgba(218, 165, 32, 1)"; // Цвет свечения (например, золотистый)
-    ctx.shadowBlur = 13; // Размытие
+    ctx.shadowColor = "rgba(220, 20, 60, 1)"; // Цвет свечения (например, золотистый)
+    ctx.shadowBlur = 7; // Размытие
     ctx.shadowOffsetX = 0; // Смещение по X
     ctx.shadowOffsetY = 0; // Смещение по Y
     ctx.stroke();
@@ -103,4 +103,34 @@ const drawArrowWithShadow = (circle1, circle2, weight, ctx) => {
   }
 };
 
-export { drawArrow, drawCircle, drawArrowWithShadow };
+const drawPacket = (ctx, circle1, circle2, t, num) => {
+  const dx = circle2.x - circle1.x;
+  const dy = circle2.y - circle1.y;
+  const angle = Math.atan2(dy, dx);
+
+  // Координаты движения
+  const startX = circle1.x + Math.cos(angle) * circle1.radius;
+  const startY = circle1.y + Math.sin(angle) * circle1.radius;
+  const endX = circle2.x - Math.cos(angle) * circle2.radius;
+  const endY = circle2.y - Math.sin(angle) * circle2.radius;
+
+  // Координаты квадрата
+  const x =
+    (1 - t) * (1 - t) * startX +
+    2 * (1 - t) * t * ((startX + endX) / 2) +
+    t * t * endX;
+
+  const y =
+    (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * startY + t * t * endY;
+
+  // Рисуем квадрат
+  const size = 15;
+  ctx.fillStyle = "red";
+  ctx.fillRect(x - size / 2, y - size / 2, size, size); // небольшой квадрат
+
+  ctx.font = "bold 15px Serif";
+  ctx.fillStyle = "black";
+  ctx.fillText(num, x, y);
+};
+
+export { drawArrow, drawCircle, drawArrowWithShadow, drawPacket };

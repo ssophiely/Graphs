@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { generateCoordinates, getMousePos } from "../../funcs/generateCoords";
 import VertexContextMenu from "./VertexContextMenu.jsx";
 import CanvasContextMenu from "./CanvasContextMenu.jsx";
+import { animatePacket, animatePacketRand } from "../../funcs/animation.js";
 import {
   drawArrow,
   drawCircle,
@@ -21,8 +22,10 @@ export default function GraphComponent({
   setInserted,
   path,
   setPath,
+  packs,
 }) {
   const canvasRef = useRef(null);
+  const leftRef = useRef(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const [selectedVertex, setSelectedVertex] = useState(null);
@@ -174,18 +177,7 @@ export default function GraphComponent({
   // отслеживание изменений ----------------------------------------------------
   useEffect(() => {
     const ctx = canvasRef.current.getContext("2d");
-    if (path !== null) {
-      const func = async () => {
-        for (let i = 0; i < path.length - 1; i++) {
-          const c1 = vertexes.find((v) => v.id === path[i]);
-          const c2 = vertexes.find((v) => v.id === path[i + 1]);
-          drawArrowWithShadow(c1, c2, inpData[i][i + 1], ctx);
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-        setPath(null);
-      };
-      func();
-    } else {
+    const drawAll = () => {
       canvasRef.current
         .getContext("2d")
         .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
@@ -206,11 +198,102 @@ export default function GraphComponent({
           );
         }
       }
+    };
+
+    const drawShadow = () => {
+      if (path.every(Array.isArray)) {
+        for (let i = 0; i < path.length; i++) {
+          const c1 = vertexes.find((v) => v.id === path[i][0]);
+          const c2 = vertexes.find((v) => v.id === path[i][1]);
+          for (let i = 0; i < 2; i++) drawArrowWithShadow(c1, c2, 1, ctx);
+        }
+      } else {
+        for (let i = 0; i < path.length - 1; i++) {
+          const c1 = vertexes.find((v) => v.id === path[i]);
+          const c2 = vertexes.find((v) => v.id === path[i + 1]);
+          for (let i = 0; i < 2; i++)
+            drawArrowWithShadow(c1, c2, inpData[i][i + 1], ctx);
+        }
+      }
+    };
+
+    const allArePlainObjects = (arr) =>
+      arr.every(
+        (element) =>
+          typeof element === "object" &&
+          element !== null &&
+          !Array.isArray(element) &&
+          !(element instanceof Function) // дополнительно проверяем, что это не функция
+      );
+
+    // Отрисовка одного направления
+    const func = async () => {
+      for (let i = 0; i < path.length - 1; i++) {
+        await animatePacket(
+          [
+            {
+              c1: vertexes[path[i]],
+              c2: vertexes[path[i + 1]],
+              distance: parseInt(inpData[path[i]][path[i + 1]]),
+            },
+          ],
+          ctx,
+          drawAll,
+          drawShadow,
+          packs
+        );
+      }
+      //await new Promise((resolve) => setTimeout(resolve, 90));
+      setPath(null);
+    };
+
+    // Отрисовка пакетов сразу в нескольких направлениях
+    const parallelFunc = async () => {
+      await animatePacket(
+        path.map((p) => {
+          return {
+            c1: vertexes[p[0]],
+            c2: vertexes[p[1]],
+            distance: parseInt(inpData[p[0]][p[1]]),
+          };
+        }),
+        ctx,
+        drawAll,
+        drawShadow,
+        packs
+      );
+      //await new Promise((resolve) => setTimeout(resolve, 30));
+      setPath(null);
+    };
+
+    // Отрисовка пакетов для случайной дейт. методом
+    const randFunc = async () => {
+      await animatePacketRand(
+        path.map((p) => {
+          return {
+            c1: vertexes[p.path[0]],
+            c2: vertexes[p.path[1]],
+            number: p.num,
+          };
+        }),
+        ctx,
+        drawAll,
+        drawShadow
+      );
+      //await new Promise((resolve) => setTimeout(resolve, 30));
+      setPath(null);
+    };
+
+    if (path !== null) {
+      if (path.every(Array.isArray)) parallelFunc();
+      else if (allArePlainObjects(path)) randFunc();
+      else func();
+    } else {
+      drawAll();
     }
   }, [path]);
 
   useEffect(() => {
-    console.log(start, end);
     if (headers.length !== names.length) {
       let newVertexes = headers.map((h, ind) => {
         if (h !== "") {
@@ -284,9 +367,11 @@ export default function GraphComponent({
 
   // поменяли веса в таблице
   useEffect(() => {
+    resizeCanvas();
     canvasRef.current
       .getContext("2d")
       .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
     vertexes.forEach((item) => {
       drawCircle(item, canvasRef.current.getContext("2d"));
     });
@@ -368,12 +453,42 @@ export default function GraphComponent({
     }
   };
 
+  // -------------------канвас
+  const resizeCanvas = () => {
+    const canvas = canvasRef.current;
+    const container = leftRef.current;
+
+    if (canvas && container) {
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight - container.clientHeight * 0.03;
+    }
+  };
+
+  useEffect(() => {
+    resizeCanvas();
+
+    canvasRef.current
+      .getContext("2d")
+      .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+    vertexes.forEach((item) => {
+      drawCircle(item, canvasRef.current.getContext("2d"));
+    });
+
+    for (let i = 0; i < inpData.length; i++) {
+      for (let j = 0; j < inpData[i].length; j++) {
+        const circle1 = vertexes.find((v) => v.id === i);
+        const circle2 = vertexes.find((v) => v.id === j);
+        const weight = parseInt(inpData[i][j]) ? parseInt(inpData[i][j]) : 0;
+        drawArrow(circle1, circle2, weight, canvasRef.current.getContext("2d"));
+      }
+    }
+  }, [leftRef.current?.clientWidth, leftRef.current?.clientHeight]);
+
   return (
-    <div id="left">
+    <div className="left" ref={leftRef}>
       <canvas
         ref={canvasRef}
-        width="880"
-        height="630"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -391,8 +506,8 @@ export default function GraphComponent({
         addArc={inpData[clickedVertex?.id]?.some((el, ind) => {
           return (
             ["", "0"].includes(el) &&
-            headers[ind] != "" &&
-            headers[ind] != clickedVertex?.label
+            headers[ind] !== "" &&
+            headers[ind] !== clickedVertex?.label
           );
         })}
         changeArc={inpData[clickedVertex?.id]?.some(

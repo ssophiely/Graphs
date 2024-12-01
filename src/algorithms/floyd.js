@@ -1,5 +1,4 @@
 export function floyd(data) {
-  console.log(2)
   data = data.map((r, i) => {
     return r.map((v, j) => {
       if (i === j) return 0;

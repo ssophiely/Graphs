@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
 import MatrixComponent from "./graph_info/MatrixComponent.jsx";
-import Output from "./graph_info/Output.jsx";
+import Output from "./graph_info/output/Output.jsx";
 
 export default function Tools({
   vertexCount,
@@ -11,11 +10,10 @@ export default function Tools({
   setData,
   start,
   end,
-  startOnChange,
-  endOnChange,
   inserted,
   deleted,
-  setPath
+  setPath,
+  setPackets,
 }) {
   return (
     <div className="right">
@@ -35,9 +33,8 @@ export default function Tools({
         data={data}
         start={start}
         end={end}
-        startOnChange={startOnChange}
-        endOnChange={endOnChange}
-        setResultPath={setPath}
+        setPath={setPath}
+        setPackets={setPackets}
       />
     </div>
   );

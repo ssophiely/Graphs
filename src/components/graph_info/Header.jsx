@@ -17,8 +17,8 @@ export default function Header({ input, vertexCount, onClickHandler }) {
           />
         </label>
       </div>
-      <button className="create_matrix_btn" id="btn" onClick={onClickHandler}>
-        Создать матрицу весов
+      <button className="btn clear_btn" onClick={onClickHandler}>
+        Очистить матрицу
       </button>
     </>
   );

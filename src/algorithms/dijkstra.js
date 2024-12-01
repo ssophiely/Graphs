@@ -1,5 +1,4 @@
-export function dijkstra(data) {
-  console.log(1)
+function dijkstra(data) {
   const lenMatrix = Array.from({ length: data.length }, () =>
     Array.from({ length: data.length }, () => 0)
   );
@@ -69,3 +68,5 @@ function findMinPath(data, start, end) {
 
   return [distance[end], path];
 }
+
+export { dijkstra, findMinPath };

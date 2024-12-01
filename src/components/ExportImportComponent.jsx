@@ -59,20 +59,12 @@ export default function ExportImportComponent({
 
   return (
     <div className="button_group">
-      <button
-        className="create_matrix_btn exp "
-        id="exp"
-        onClick={handleExport}
-      >
+      <button className="btn exp_imp " onClick={handleExport}>
         Экспортировать
       </button>
       <div id="import">
         <input id="file" type="file" name="file" onChange={handleFileChange} />
-        <button
-          className="create_matrix_btn imp"
-          id="exp"
-          onClick={handleImport}
-        >
+        <button className="btn exp_imp" onClick={handleImport}>
           Импортировать
         </button>
       </div>

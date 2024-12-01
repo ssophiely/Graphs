@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import GraphComponent from "./components/graph/GraphComponent.jsx";
 import Tools from "./components/Tools.jsx";
 import ExportImportComponent from "./components/ExportImportComponent.jsx";
@@ -15,7 +15,6 @@ function App() {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   function handleStartChange(e) {
-    console.log(5, e.target.value)
     setStart(e.target.value);
   }
   function handleEndChange(e) {
@@ -26,6 +25,7 @@ function App() {
   const [inserted, setInserted] = useState(null);
 
   const [path, setPath] = useState(null);
+  const [packCount, setPackCount] = useState(5);
 
   return (
     <>
@@ -53,6 +53,7 @@ function App() {
           setInserted={setInserted}
           path={path}
           setPath={setPath}
+          packs={packCount}
         />
         <Tools
           vertexCount={vertexCount}
@@ -68,6 +69,7 @@ function App() {
           deleted={deleted}
           inserted={inserted}
           setPath={setPath}
+          setPackets={setPackCount}
         />
       </div>
     </>
