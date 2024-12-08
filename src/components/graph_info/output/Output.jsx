@@ -37,8 +37,7 @@ export default function Output({
   function getRouting() {
     return data.map((row, rowInd) => {
       return row.map((cell, colInd) => {
-        if (cell === "" || cell === 0 || cell === "0") return 0;
-        return 1;
+        return null;
       });
     });
   }
@@ -101,7 +100,7 @@ export default function Output({
       headers.indexOf(start),
       headers.indexOf(end)
     );
-    console.log(paths)
+    console.log(paths);
 
     const path = paths[Math.floor(Math.random() * (paths.length - 0)) + 0];
 
@@ -134,68 +133,83 @@ export default function Output({
       headers.indexOf(end)
     );
 
-    const maxLen = Math.max(...paths.map((arr) => arr.length));
-    let values = Array.from({ length: paths.length }, (_, index) => index);
+    // const maxLen = Math.max(...paths.map((arr) => arr.length));
+    // let values = Array.from({ length: paths.length }, (_, index) => index);
 
-    for (let j = 0; j < maxLen - 1; j++) {
-      paths = paths.filter((p, i) => values.includes(i));
-      console.log(paths);
+    // for (let j = 0; j < maxLen - 1; j++) {
+    //   paths = paths.filter((p, i) => values.includes(i));
+    //   console.log(paths);
 
-      if (paths.length === 1) break;
+    //   if (paths.length === 1) break;
 
-      let min = 1000;
+    //   let min = 1000;
 
-      paths.forEach((p, ind) => {
-        let start = p.at(j);
-        let end = p.at(j + 1);
-        if (start === undefined || end === undefined) values.push(ind);
-        else {
-          let val = routing[p[j]][p[j + 1]];
-          if (val < min) {
-            values = [ind];
-            min = val;
-          } else if (val === min) values.push(ind);
-        }
-      });
-    }
+    //   paths.forEach((p, ind) => {
+    //     let start = p.at(j);
+    //     let end = p.at(j + 1);
+    //     if (start === undefined || end === undefined) values.push(ind);
+    //     else {
+    //       let val = routing[p[j]][p[j + 1]];
+    //       if (val < min) {
+    //         values = [ind];
+    //         min = val;
+    //       } else if (val === min) values.push(ind);
+    //     }
+    //   });
+    // }
 
     const path = paths[Math.floor(Math.random() * (paths.length - 0)) + 0];
-    console.log(path);
+    let vertexes = [];
 
-    let [animate, info] = buildVirtualInfo(findDistance(path), path);
+    for (let i = 0; i < path.length - 1; i++) {
+      const vA = path[i];
+      const vB = path[i + 1];
+      setPath([vA, vB]);
+      await new Promise((resolve) => setTimeout(resolve, 1810));
 
-    if (animate) {
-      setPath(path);
+      // Пересчитываем таблицу
+      setRouting((prevRouting) => {
+        let array = prevRouting.map((row) => [...row]);
+        array[vA][vB] = 1;
+
+        vertexes.forEach((v) => {
+          if (array[v][vA] + 1 < array[v][vB] || array[v][vB] === null)
+            array[v][vB] = array[v][vA] + 1;
+        });
+
+        return array;
+      });
+
+      vertexes.push(vA);
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 1810));
-
+    let [animate, info] = buildVirtualInfo(findDistance(path), path);
     setInfo((prev) => {
       return prev + info;
     });
 
-    // Меняем таблицу
-    setRouting((prevRouting) => {
-      // Пересчитываем таблицу
-      let array = prevRouting.map((row) => [...row]);
+    // // Меняем таблицу
+    // setRouting((prevRouting) => {
+    //   // Пересчитываем таблицу
+    //   let array = prevRouting.map((row) => [...row]);
 
-      for (let k = path.length - 3; k >= 0; k--) {
-        let row = array[path[k + 1]].filter((x) => x !== 0);
-        array[path[k]][path[k + 1]] = 1 + Math.min(...row);
+    //   for (let k = path.length - 3; k >= 0; k--) {
+    //     let row = array[path[k + 1]].filter((x) => x !== 0);
+    //     array[path[k]][path[k + 1]] = 1 + Math.min(...row);
 
-        row = array[path[k]].filter((x) => x !== 0);
-        for (let i = 0; i < array.length; i++) {
-          if (
-            array[i][path[k]] !== 0 &&
-            i !== k &&
-            i !== headers.indexOf(end)
-          ) {
-            array[i][path[k]] = 1 + Math.min(...row); // заменяем значение в столбце k
-          }
-        }
-      }
-      return array;
-    });
+    //     row = array[path[k]].filter((x) => x !== 0);
+    //     for (let i = 0; i < array.length; i++) {
+    //       if (
+    //         array[i][path[k]] !== 0 &&
+    //         i !== k &&
+    //         i !== headers.indexOf(end)
+    //       ) {
+    //         array[i][path[k]] = 1 + Math.min(...row); // заменяем значение в столбце k
+    //       }
+    //     }
+    //   }
+    //   return array;
+    // });
   }
 
   // Дейтаграммная передача случайным методом
@@ -346,27 +360,40 @@ export default function Output({
       path: [headers.indexOf(start)],
       reason: null,
     }));
+    let vertexes = Array.from({ length: count }, () => []);
 
     setPackets(1);
 
     const findNeighbours = (i) => {
-      var row = [...routing[i]];
+      const numData = data.map((v) =>
+        v.map((x) => (parseInt(x) ? parseInt(x) : 0))
+      );
 
-      row = row.map((x) => {
-        if (x === 0) return 1000;
-        return x;
-      });
-      const minElement = Math.min(...row);
+      let neighbors = numData[i]
+        .map((val, ind) => {
+          if (val === 0) return null;
+          return ind;
+        })
+        .filter((n) => n !== null);
 
-      if (minElement === 1000) return [];
+      return neighbors;
+      // var row = [...routing[i]];
 
-      var neighbInds = [];
-      row.forEach((value, index) => {
-        if (value === minElement) {
-          neighbInds.push(index);
-        }
-      });
-      return neighbInds;
+      // row = row.map((x) => {
+      //   if (x === 0) return 1000;
+      //   return x;
+      // });
+      // const minElement = Math.min(...row);
+
+      // if (minElement === 1000) return [];
+
+      // var neighbInds = [];
+      // row.forEach((value, index) => {
+      //   if (value === minElement) {
+      //     neighbInds.push(index);
+      //   }
+      // });
+      // return neighbInds;
     };
 
     const findPaths = (n) => {
@@ -378,18 +405,18 @@ export default function Output({
 
         // Если пакет достиг назначения
         if (current[i] === headers.indexOf(end)) {
-          setRouting((prevRouting) => {
-            // Пересчитываем таблицу
-            let array = prevRouting.map((row) => [...row]);
-            let path = result[i].path;
+          // setRouting((prevRouting) => {
+          //   // Пересчитываем таблицу
+          //   let array = prevRouting.map((row) => [...row]);
+          //   let path = result[i].path;
 
-            for (let k = path.length - 3; k >= 0; k--) {
-              let row = array[path[k + 1]].filter((x) => x !== 0);
-              array[path[k]][path[k + 1]] = 1 + Math.min(...row);
-            }
+          //   for (let k = path.length - 3; k >= 0; k--) {
+          //     let row = array[path[k + 1]].filter((x) => x !== 0);
+          //     array[path[k]][path[k + 1]] = 1 + Math.min(...row);
+          //   }
 
-            return array;
-          });
+          //   return array;
+          // });
           current[i] = null;
           continue;
         }
@@ -414,6 +441,32 @@ export default function Output({
           neighbors[Math.floor(Math.random() * (neighbors.length - 0)) + 0];
 
         paths.push({ path: [current[i], ind], num: i + 1 });
+
+        const vA = current[i];
+        const vB = ind;
+
+        setRouting((prevRouting) => {
+          // Пересчитываем таблицу
+          // let array = prevRouting.map((row) => [...row]);
+          // let path = result[i].path;
+
+          // for (let k = path.length - 3; k >= 0; k--) {
+          //   let row = array[path[k + 1]].filter((x) => x !== 0);
+          //   array[path[k]][path[k + 1]] = 1 + Math.min(...row);
+          // }
+
+          // return array;
+          let array = prevRouting.map((row) => [...row]);
+          array[vA][vB] = 1;
+
+          vertexes[i].forEach((v) => {
+            if (array[v][vA] + 1 < array[v][vB] || array[v][vB] === null)
+              array[v][vB] = array[v][vA] + 1;
+          });
+          return array;
+        });
+
+        vertexes[i].push(current[i]);
 
         result[i].path.push(ind);
         current[i] = ind;
@@ -608,7 +661,7 @@ export default function Output({
                   {row.map((cell, colIndex) => {
                     if (colIndex === rowIndex)
                       return <td key={colIndex} className="diagonal"></td>;
-                    if (cell === 0) return <td key={colIndex}></td>;
+                    if (cell === null) return <td key={colIndex}></td>;
                     return <td key={colIndex}>{cell}</td>;
                   })}
                 </tr>
